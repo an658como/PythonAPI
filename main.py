@@ -1,8 +1,9 @@
 from email.quoprimime import body_check
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.params import Body
 from pydantic import BaseModel
+from random import randrange
 
 app = FastAPI()
 
@@ -16,7 +17,10 @@ class Post(BaseModel):
 my_posts = [{"title": "title of post 1", "content": "content of post 1", "ID": 1},
             {"title": "favortie foods", "content": "I love pizza", "ID": 2}]
 
-
+def find_post(id):
+    for post in my_posts:
+        if post.get("ID") == id:
+            return post
 
 # request Get method url:"/"
 @app.get("/")
@@ -28,9 +32,27 @@ def get_user():
 def get_posts():
     return {"data": my_posts}
 
+# latest can be treated as a variable for {id}. the order for path parameters matters
+@app.get("/post/latest")
+def get_lastest_post():
+    post = my_posts[len(my_posts)-1]
+    return {"detail": post}
 
-@app.post("/posts")
+@app.get("/post/{id}")
+def get_post(id: int, response: Response):
+    post = find_post(id)
+    if post ==None:
+        # change the status code upon an exception
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                       detail=f"The post with id:{id} not found")
+        #response.status_code = status.HTTP_404_NOT_FOUND
+        #return {"message": f"The post with id:{id} not found"}
+    return {"post": post}
+
+# change the defaul status code
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_posts(post: Post):
-    print(post)
-    print(post.dict())
-    return{"data": "new_post"}
+    post_dict = post.dict()
+    post_dict['id'] = randrange(0, 1000000)
+    my_posts.append(post_dict)
+    return post_dict
