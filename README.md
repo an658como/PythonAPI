@@ -10,3 +10,9 @@ Create a virtaul environment using your preffered name <venv>:
     > venv\Scripts\activate
 ### Install the FastAPI libraries
     pip install fastapi[all]
+
+
+## API Documentation
+The API documentation is generated automatically. Once the server is running just enter the following in your browser:
+
+    http://127.0.0.1:8000/docs
