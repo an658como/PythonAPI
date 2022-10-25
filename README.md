@@ -12,7 +12,15 @@ Create a virtaul environment using your preffered name <venv>:
     > venv\Scripts\activate
 ### Install the FastAPI libraries
     
-    pip install fastapi[all]
+    > pip install fastapi[all]
+
+### Install the PostGres Communication Library
+
+    > pip install psycopg2
+
+## Running the Server
+
+    > uvicorn app.main:app --reload
 
 
 ## API Documentation
