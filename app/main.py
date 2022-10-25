@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import time
 app = FastAPI()
 
 
@@ -14,15 +15,20 @@ class Post(BaseModel):
     rating: Optional[int] = None
     
 # setup the database connection
-
-try:
-    conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='Ansr1991!',
-                            cursor_factory=RealDictCursor)
-    cursor = conn.cursor()
-    print('Database connection was succesfull!')
-except Exception as error:
-    print('Error with database connection')
-    print('Error: ', error)
+# add while loop to keep try the following block for the situations where your internet is disconnected or 
+# the database server is not responding
+while True:
+    try:
+        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='#######',
+                                cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        print('Database connection was succesfull!')
+        break
+    except Exception as error:
+        print('Error with database connection')
+        print('Error: ', error)
+        # pasue for 2 seconds before executing the server connection
+        time.sleep(2)
 
 
 my_posts = [{"title": "title of post 1", "content": "content of post 1", "ID": 1},
@@ -46,7 +52,10 @@ def get_user():
 # request Get method for posts url:"/posts"
 @app.get("/posts")
 def get_posts():
-    return {"data": my_posts}
+    # this only prepares the query string
+    cursor.execute("""SELECT * FROM posts;""")
+    posts = cursor.fetchall()
+    return {"data": posts}
 
 # latest can be treated as a variable for {id}. the order for path parameters matters
 @app.get("/post/latest")
