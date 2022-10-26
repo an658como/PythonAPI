@@ -1,3 +1,4 @@
+from email import contentmanager
 from turtle import pos
 from typing import Optional
 from fastapi import FastAPI, Response, status, HTTPException
@@ -6,7 +7,17 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from . import models
+from .database import engine, get_db
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+
+
 
 
 class Post(BaseModel):
@@ -14,13 +25,13 @@ class Post(BaseModel):
     content: str
     published: bool = True
     rating: Optional[int] = None
-    
-# setup the database connection
-# add while loop to keep try the following block for the situations where your internet is disconnected or 
-# the database server is not responding
+   
+ #setup the database connection
+ #add while loop to keep try the following block for the situations where your internet is disconnected or 
+ #the database server is not responding
 while True:
     try:
-        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='********',
+        conn = psycopg2.connect(host='localhost', database='pyapi', user='postgres', password='Ansr1991!',
                                 cursor_factory=RealDictCursor)
         cursor = conn.cursor()
         print('Database connection was succesfull!')
@@ -32,18 +43,7 @@ while True:
         time.sleep(2)
 
 
-my_posts = [{"title": "title of post 1", "content": "content of post 1", "ID": 1},
-            {"title": "favortie foods", "content": "I love pizza", "ID": 2}]
 
-def find_post(id):
-    for post in my_posts:
-        if post.get("ID") == id:
-            return post
-
-def find_index_post(id):
-    for i, post in enumerate(my_posts):
-        if post.get("ID") == id:
-            return i
 
 # request Get method url:"/"
 @app.get("/")
@@ -52,10 +52,11 @@ def get_user():
 
 # request Get method for posts url:"/posts"
 @app.get("/posts")
-def get_posts():
+def get_posts(db: Session = Depends(get_db)):
     # this only prepares the query string
-    cursor.execute("""SELECT * FROM posts;""")
-    posts = cursor.fetchall()
+    # cursor.execute("""SELECT * FROM posts;""")
+    # posts = cursor.fetchall()
+    posts = db.query(models.Post).all()
     return {"data": posts}
 
 # latest can be treated as a variable for {id}. the order for path parameters matters
@@ -78,12 +79,19 @@ def get_post(id: int, response: Response):
 
 # change the defaul status code
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post):
-    cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
-                   (post.title, post.content, post.published))
-    new_post=cursor.fetchone()
-    # saving the changes to the database
-    conn.commit()
+def create_posts(post: Post, db: Session = Depends(get_db)):
+    #cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
+    #               (post.title, post.content, post.published))
+    #new_post=cursor.fetchone()
+    ## saving the changes to the database
+    #conn.commit()
+
+    new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    db.add(new_post)
+    db.commit()
+    # This is the RETURNING functionality of the SQL
+    db.refresh(new_post)
+    
     return {"data" : new_post}
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -110,7 +118,11 @@ def update_post(id: int, post: Post):
 
     return {"data": updated_post}
 
+# test to see if your sqlalchemy is working 
+@app.get("/sqlalchemy")
+def test_post(db: Session = Depends(get_db)):
+    #db.query(models.Post) is just the sql query string according to the table summarized in models.post
+    #db.query(models.Post).all() executes the query and returns the values of all
+    posts = db.query(models.Post).all()
 
-
-
-
+    return {"status" : posts}
