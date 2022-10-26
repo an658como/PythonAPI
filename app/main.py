@@ -2,12 +2,11 @@ from email import contentmanager
 from turtle import pos
 from typing import Optional
 from fastapi import FastAPI, Response, status, HTTPException
-from pydantic import BaseModel
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
-from . import models
+from . import models, schemas
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
@@ -20,11 +19,8 @@ app = FastAPI()
 
 
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    rating: Optional[int] = None
+
+
    
  #setup the database connection
  #add while loop to keep try the following block for the situations where your internet is disconnected or 
@@ -66,9 +62,12 @@ def get_lastest_post():
     return {"detail": post}
 
 @app.get("/post/{id}")
-def get_post(id: int, response: Response):
-    cursor.execute("""SELECT * FROM posts WHERE id = %s""", str(id))
-    post = cursor.fetchone()
+def get_post(id: int, db: Session = Depends(get_db)):
+    #cursor.execute("""SELECT * FROM posts WHERE id = %s""", str(id))
+    #post = cursor.fetchone()
+
+    post =db.query(models.Post).filter(models.Post.id == id).first()
+
     if post ==None:
         # change the status code upon an exception
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -79,14 +78,19 @@ def get_post(id: int, response: Response):
 
 # change the defaul status code
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post, db: Session = Depends(get_db)):
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     #cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
     #               (post.title, post.content, post.published))
     #new_post=cursor.fetchone()
     ## saving the changes to the database
     #conn.commit()
+    
+    # this method works if you have a limited number of colums
+    # new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    
+    # the ** automatically unpacks the dictionary into corresponding fields of the Post model
+    new_post = models.Post(**post.dict())
 
-    new_post = models.Post(title=post.title, content=post.content, published=post.published)
     db.add(new_post)
     db.commit()
     # This is the RETURNING functionality of the SQL
@@ -95,34 +99,36 @@ def create_posts(post: Post, db: Session = Depends(get_db)):
     return {"data" : new_post}
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int):
-    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
-    deleted_post = cursor.fetchone()
-    conn.commit() 
-    
-    if deleted_post == None:
+def delete_post(id: int, db: Session = Depends(get_db)):
+
+    #cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
+    #deleted_post = cursor.fetchone()
+    #conn.commit() 
+    post_query =db.query(models.Post).filter(models.Post.id == id)
+
+    if post_query.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
           detail=f"post with id:{id} not found")
+    
+    post_query.delete(synchronize_session=False)
+    db.commit()
         
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/posts/{id}")
-def update_post(id: int, post: Post):
-    cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id = %s RETURNING *""", (post.title, post.content, post.published, str(id)))
-    updated_post = cursor.fetchone()
-    conn.commit()
+def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
+    #cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id = %s RETURNING *""", (post.title, post.content, post.published, str(id)))
+    #updated_post = cursor.fetchone()
+    #conn.commit()
     
+    post_query =db.query(models.Post).filter(models.Post.id == id)
+    updated_post = post_query.first()
+
     if updated_post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
           detail=f"post with id:{id} not found")
-
-    return {"data": updated_post}
-
-# test to see if your sqlalchemy is working 
-@app.get("/sqlalchemy")
-def test_post(db: Session = Depends(get_db)):
-    #db.query(models.Post) is just the sql query string according to the table summarized in models.post
-    #db.query(models.Post).all() executes the query and returns the values of all
-    posts = db.query(models.Post).all()
-
-    return {"status" : posts}
+    # provide a dictionary of the columns and their data to the update method
+    post_query.update(post.dict(), synchronize_session=False)
+    db.commit()
+    return {"data": post_query.first()}
+    
