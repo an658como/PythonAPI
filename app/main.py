@@ -1,6 +1,6 @@
 from email import contentmanager
 from turtle import pos
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, Response, status, HTTPException
 from random import randrange
 import psycopg2
@@ -15,29 +15,23 @@ from fastapi import Depends
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-
-
-
-
-
-   
+#**************************************not used anymore, just kept for reference***************************#
  #setup the database connection
  #add while loop to keep try the following block for the situations where your internet is disconnected or 
  #the database server is not responding
-while True:
-    try:
-        conn = psycopg2.connect(host='localhost', database='pyapi', user='postgres', password='Ansr1991!',
-                                cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print('Database connection was succesfull!')
-        break
-    except Exception as error:
-        print('Error with database connection')
-        print('Error: ', error)
-        # pasue for 2 seconds before executing the server connection
-        time.sleep(2)
-
+#while True:
+#    try:
+#        conn = psycopg2.connect(host='localhost', database='pyapi', user='postgres', password='*******!',
+#                                cursor_factory=RealDictCursor)
+#        cursor = conn.cursor()
+#        print('Database connection was succesfull!')
+#        break
+#    except Exception as error:
+#        print('Error with database connection')
+#        print('Error: ', error)
+#        # pasue for 2 seconds before executing the server connection
+#        time.sleep(2)
+#**********************************************************************************************************#
 
 
 
@@ -47,21 +41,16 @@ def get_user():
     return {"message": "Welcome to my api"}
 
 # request Get method for posts url:"/posts"
-@app.get("/posts")
+@app.get("/posts", response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db)):
     # this only prepares the query string
     # cursor.execute("""SELECT * FROM posts;""")
     # posts = cursor.fetchall()
     posts = db.query(models.Post).all()
-    return {"data": posts}
+    return posts
 
-# latest can be treated as a variable for {id}. the order for path parameters matters
-@app.get("/post/latest")
-def get_lastest_post():
-    post = my_posts[len(my_posts)-1]
-    return {"detail": post}
 
-@app.get("/post/{id}")
+@app.get("/post/{id}", response_model=schemas.Post)
 def get_post(id: int, db: Session = Depends(get_db)):
     #cursor.execute("""SELECT * FROM posts WHERE id = %s""", str(id))
     #post = cursor.fetchone()
@@ -74,10 +63,10 @@ def get_post(id: int, db: Session = Depends(get_db)):
                        detail=f"The post with id:{id} not found")
         #response.status_code = status.HTTP_404_NOT_FOUND
         #return {"message": f"The post with id:{id} not found"}
-    return {"post": post}
+    return post
 
 # change the defaul status code
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     #cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
     #               (post.title, post.content, post.published))
@@ -95,8 +84,8 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     db.commit()
     # This is the RETURNING functionality of the SQL
     db.refresh(new_post)
-    
-    return {"data" : new_post}
+    # The class config setting in the schema allows the  automatic conversion of new_post (SQLAlchemy) to the the chosen response model (Dictionary)
+    return new_post
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
@@ -130,5 +119,5 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
     # provide a dictionary of the columns and their data to the update method
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
-    return {"data": post_query.first()}
+    return post_query.first()
     
