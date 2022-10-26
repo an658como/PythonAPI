@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class PostBase(BaseModel):
     title: str
@@ -18,5 +18,18 @@ class Post(PostBase):
     created_at: datetime
     # Be cautious this response is supposed to work with SQLAlchemy while pydantic only understand dictionaries
     # The following config setting allows SQLAlchemy data work as a dictionary
+    class Config:
+        orm_mode = True
+
+class UserCreate(BaseModel):
+    # The emailvalidator library is already installed
+    # Pydantic has data type which makes sure your email address is entered properly EmailStr
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
     class Config:
         orm_mode = True

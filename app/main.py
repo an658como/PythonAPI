@@ -6,10 +6,11 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
-from . import models, schemas
+from . import models, schemas, utils
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
+ 
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -120,4 +121,18 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
+def create_users(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
+    user.password = utils.hash(user.password)
+    
+    new_user = models.User(**user.dict())
+
+    db.add(new_user)
+    db.commit()
+    # This is the RETURNING functionality of the SQL
+    db.refresh(new_user)
+    # The class config setting in the schema allows the  automatic conversion of new_post (SQLAlchemy) to the the chosen response model (Dictionary)
+    return new_user
