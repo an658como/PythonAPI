@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from . import models
 from .database import engine
-from app.routers import post, user
+from app.routers import post, user, auth
  
 
 
@@ -20,6 +20,7 @@ app = FastAPI()
 
 app.include_router(post.router)
 app.include_router(user.router)
+app.include_router(auth.router)
 
 # request Get method url:"/"
 @app.get("/")
