@@ -25,6 +25,12 @@ Instead of using using psycopg2 as a direct communication tool with the database
 
     > pip install sqlalchemy
 
+### Install Passlibe with bcrypt algorithm
+This is for hashing the password for the storage in database.
+
+    > pip install passlib[bcrypt]
+
+
 ## Running the Server
 
     > uvicorn app.main:app --reload
