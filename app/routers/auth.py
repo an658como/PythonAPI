@@ -1,17 +1,18 @@
 from fastapi import APIRouter, HTTPException, Response, Depends, status
 from sqlalchemy.orm import Session
+from app import schemas
 from app.schemas import UserLogin
 # Import the password request form instead of using your own data model
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from app.database import get_db
-from app import models
+from app import models, oauth2
 from app.utils import verify
-from app.routers import oauth2
+
 
 router = APIRouter(tags=['Authentication'])
 
-@router.post('/login')
+@router.get('/login', response_model=schemas.Token)
 def login(user_credentials: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
 
     # Using OAuth2Passwrod form, there is no dedicated email field. The email is stored in the username 
