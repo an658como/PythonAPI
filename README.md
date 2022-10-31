@@ -20,16 +20,19 @@ This is the driver for the communication with the PostGres SQL database.
 
     > pip install psycopg2
 
+### Install the passlib with the bcrypt algorithm
+This is for password hashing
+
+    > pip install passlibe[bcrypt]
+
+### Install python-jose for token creation
+
+    > pip install "python-jose[cryptography]"
+
 ### Install SQLAlchemy which is an ORM
 Instead of using using psycopg2 as a direct communication tool with the database, you can use and Object Relational Mapper as bridge between Python commands and the database commands. psycopg2 executes SQL commands directly in python, but SQLAlchemy uses a python model for simulating the database and executes the SQL commands itself. Even if you are using SQLAlchemy, psycopg2 must be installed because this the driver to talk to the database, and SQLAlchemy also uses this driver. 
 
     > pip install sqlalchemy
-
-### Install Passlibe with bcrypt algorithm
-This is for hashing the password for the storage in database.
-
-    > pip install passlib[bcrypt]
-
 
 ## Running the Server
 

@@ -5,6 +5,7 @@ from app.schemas import UserLogin
 from app.database import get_db
 from app import models
 from app.utils import verify
+from app.routers import oauth2
 
 router = APIRouter(tags=['Authentication'])
 
@@ -21,5 +22,7 @@ def login(user_credentials: UserLogin,  db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail='Invalid Credintials') 
         
-    # create token     
-    return {"token": "example token"}
+    # create token 
+
+    access_token = oauth2.create_access_token(data={"user_id": user.id})
+    return {"access_token" : access_token, "token_type" : "bearer" }
