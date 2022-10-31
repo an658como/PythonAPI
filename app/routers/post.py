@@ -19,7 +19,7 @@ router = APIRouter(
 
 # request Get method for posts url:"/posts"
 @router.get("/", response_model=List[schemas.Post])
-def get_posts(db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_crruent_user)):
+def get_posts(db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
     # this only prepares the query string
     # cursor.execute("""SELECT * FROM posts;""")
     # posts = cursor.fetchall()
@@ -28,7 +28,7 @@ def get_posts(db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_
 
 
 @router.get("/{id}", response_model=schemas.Post)
-def get_post(id: int, db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_crruent_user)):
+def get_post(id: int, db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
     #cursor.execute("""SELECT * FROM posts WHERE id = %s""", str(id))
     #post = cursor.fetchone()
 
@@ -44,7 +44,7 @@ def get_post(id: int, db: Session = Depends(get_db), user_id : int = Depends(oau
 
 # change the defaul status code
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
-def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_crruent_user)):
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
     #cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
     #               (post.title, post.content, post.published))
     #new_post=cursor.fetchone()
@@ -55,7 +55,6 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), user_i
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     
     # the ** automatically unpacks the dictionary into corresponding fields of the Post model
-    print(user_id)
 
 
     new_post = models.Post(**post.dict())
@@ -68,7 +67,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), user_i
     return new_post
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_crruent_user)):
+def delete_post(id: int, db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
 
     #cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
     #deleted_post = cursor.fetchone()
@@ -85,7 +84,7 @@ def delete_post(id: int, db: Session = Depends(get_db), user_id : int = Depends(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/{id}")
-def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db), user_id : int = Depends(oauth2.get_crruent_user)):
+def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
     #cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id = %s RETURNING *""", (post.title, post.content, post.published, str(id)))
     #updated_post = cursor.fetchone()
     #conn.commit()
