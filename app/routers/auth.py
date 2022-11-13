@@ -10,9 +10,9 @@ from app import models, oauth2
 from app.utils import verify
 
 
-router = APIRouter(tags=['Authentication'])
+router = APIRouter(prefix='/login',tags=['Authentication'])
 
-@router.get('/login', response_model=schemas.Token)
+@router.get('/', response_model=schemas.Token)
 def login(user_credentials: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
     print("Hello from login")
     print(user_credentials.username)
