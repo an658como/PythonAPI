@@ -17,6 +17,7 @@ class Post(PostBase):
     # There is no reason to include title, etc. because of the inheritance
     id: int
     created_at: datetime
+    owner_id: int
     # Be cautious this response is supposed to work with SQLAlchemy while pydantic only understand dictionaries
     # The following config setting allows SQLAlchemy data work as a dictionary
     class Config:

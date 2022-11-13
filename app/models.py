@@ -3,7 +3,7 @@ from email.policy import default
 from enum import unique
 from .database import Base
 # import a package for columns and datatypes 
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 
 
 class Post(Base):
@@ -15,6 +15,7 @@ class Post(Base):
     content = Column(String, nullable=False)
     published = Column(Boolean, nullable=False, server_default='True')
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default='NOW()')
+    owner_id = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"), nullable=False)
 
 
 class User(Base):

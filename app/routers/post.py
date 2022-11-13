@@ -56,8 +56,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
     
     # the ** automatically unpacks the dictionary into corresponding fields of the Post model
 
-
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id=current_user.id, **post.dict())
 
     db.add(new_post)
     db.commit()
@@ -77,6 +76,12 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user : int = Dep
     if post_query.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
           detail=f"post with id:{id} not found")
+        
+    post = post_query.first()
+    print("ID Chekc", post.id, current_user.id)
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested actions")
+        
     
     post_query.delete(synchronize_session=False)
     db.commit()
@@ -96,6 +101,9 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
           detail=f"post with id:{id} not found")
     # provide a dictionary of the columns and their data to the update method
+
+    if updated_post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested actions")
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
