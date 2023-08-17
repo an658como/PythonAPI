@@ -23,7 +23,7 @@ This is the driver for the communication with the PostGres SQL database.
 ### Install the passlib with the bcrypt algorithm
 This is for password hashing
 
-    > pip install passlibe[bcrypt]
+    > pip install passlib[bcrypt]
 
 ### Install python-jose for token creation
 
