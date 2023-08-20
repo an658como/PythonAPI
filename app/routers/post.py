@@ -1,8 +1,10 @@
 from fastapi import status, HTTPException, Depends, APIRouter, Response
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app import models, schemas, oauth2
 from app.database import get_db
 from typing import List, Optional
+from pprint import pprint
 
 
 
@@ -18,21 +20,22 @@ router = APIRouter(
 # import the routers to the app in the main file. 
 
 # request Get method for posts url:"/posts"
-@router.get("/", response_model=List[schemas.Post])
+@router.get("/", response_model=List[schemas.PostOut])
 def get_posts(db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user), 
               limit: int = 10, skip: int = 0, search: Optional[str] = ''):
     # add a query parameter to your route. Pass the value using /?limit=3
     print("Print the query parameter", limit)
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    return posts
+    results = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    return results
 
 
-@router.get("/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.PostOut)
 def get_post(id: int, db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_crruent_user)):
     #cursor.execute("""SELECT * FROM posts WHERE id = %s""", str(id))
     #post = cursor.fetchone()
 
-    post =db.query(models.Post).filter(models.Post.id == id).first()
+
+    post =db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
 
     if post ==None:
         # change the status code upon an exception
