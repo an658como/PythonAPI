@@ -9,10 +9,12 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
+
 class UserOut(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
+
     class Config:
         orm_mode = True
 
@@ -27,11 +29,14 @@ class PostBase(BaseModel):
     content: str
     published: bool = True
 
+
 class PostCreate(PostBase):
     pass
 
+
 # The same way you define a model for your data to be received from the client, you can
 # define a model for the response
+
 
 class Post(PostBase):
     # There is no reason to include title, etc. because of the inheritance
@@ -39,24 +44,30 @@ class Post(PostBase):
     created_at: datetime
     owner_id: int
     owner: UserOut
+
     # Be cautious this response is supposed to work with SQLAlchemy while pydantic only understand dictionaries
     # The following config setting allows SQLAlchemy data work as a dictionary
     class Config:
         orm_mode = True
 
+
 class PostOut(BaseModel):
     Post: Post
     votes: int
+
     class Config:
         orm_mode = True
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     id: Optional[int] = None
-    
+
+
 class Vote(BaseModel):
     post_id: int
-    dir: conint(le=1) # you just need a datatype that can provde only 0 and 1
+    dir: conint(le=1)  # you just need a datatype that can provde only 0 and 1
