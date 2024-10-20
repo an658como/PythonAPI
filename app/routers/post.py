@@ -26,7 +26,6 @@ def get_posts(
     search: Optional[str] = "",
 ):
     # add a query parameter to your route. Pass the value using /?limit=3
-    print("Print the query parameter", limit)
     results = (
         db.query(models.Post, func.count(models.Vote.post_id).label("votes"))
         .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)
@@ -114,7 +113,6 @@ def delete_post(
         )
 
     post = post_query.first()
-    print("ID Chekc", post.id, current_user.id)
     if post.owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -19,8 +19,7 @@ def login(
     user_credentials: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    print("Hello from login")
-    print(user_credentials.username)
+
     # Using OAuth2Passwrod form, there is no dedicated email field. The email is stored in the username
     user = (
         db.query(models.User)

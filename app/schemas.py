@@ -16,7 +16,7 @@ class UserOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attribute = True
 
 
 class UserLogin(BaseModel):
@@ -48,7 +48,7 @@ class Post(PostBase):
     # Be cautious this response is supposed to work with SQLAlchemy while pydantic only understand dictionaries
     # The following config setting allows SQLAlchemy data work as a dictionary
     class Config:
-        orm_mode = True
+        from_attribute = True
 
 
 class PostOut(BaseModel):
@@ -56,7 +56,7 @@ class PostOut(BaseModel):
     votes: int
 
     class Config:
-        orm_mode = True
+        from_attribute = True
 
 
 class Token(BaseModel):
