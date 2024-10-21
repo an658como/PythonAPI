@@ -1,45 +1,62 @@
-# Python API using FastAPI
-## Introduction
-In this project a fully functiong API for a simple social media app is created.
 
-## Installation
-### Virtual Environment
-Create a virtaul environment using your preffered name <venv>:
-    
-    py -3 -m venv <venv>
-### Activate venv (Windows)
-    
-    > venv\Scripts\activate
+# 🚀 Python API using FastAPI
 
-### Install the FastAPI libraries
-    
-    > pip install fastapi[all]
+## 🌟 Introduction
+This project aims to develop the necessary REST API endpoints for a simple social media platform using **FastAPI**.
 
-### Install the PostGres Communication Library
-This is the driver for the communication with the PostGres SQL database. 
+## ⚙️ Setup for Development Environment and Running the Server Locally
 
-    > pip install psycopg2
+### 🐍 Virtual Environment
+Create a virtual environment with your preferred name `<venv>`:
 
-### Install the passlib with the bcrypt algorithm
-This is for password hashing
+```bash
+python3 -m venv <venv>
+```
 
-    > pip install passlib[bcrypt]
+### 💻 Activate Virtual Environment (Linux)
 
-### Install python-jose for token creation
+```bash
+<venv>/bin/activate
+```
 
-    > pip install "python-jose[cryptography]"
+### 📦 Install Dependencies
+To install all required dependencies:
 
-### Install SQLAlchemy which is an ORM
-Instead of using using psycopg2 as a direct communication tool with the database, you can use and Object Relational Mapper as bridge between Python commands and the database commands. psycopg2 executes SQL commands directly in python, but SQLAlchemy uses a python model for simulating the database and executes the SQL commands itself. Even if you are using SQLAlchemy, psycopg2 must be installed because this the driver to talk to the database, and SQLAlchemy also uses this driver. 
+```bash
+pip install -r requirements.txt
+```
 
-    > pip install sqlalchemy
+### 🐘 Install PostgreSQL
+You have two options to set up PostgreSQL:
+1. **Install a local instance** of PostgreSQL and create an empty database named `fastapi`.
+2. **Use Docker**: From the project root directory, run the following command to spin up PostgreSQL using Docker:
 
-## Running the Server
+```bash
+docker compose up -d
+```
 
-    > uvicorn app.main:app --reload
+### 🛠️ Build the Database Tables
+We use **Alembic** for database migrations. Run the following command to create the required tables in the database:
 
+```bash
+alembic upgrade head
+```
 
-## API Documentation
-The API documentation is generated automatically. Once the server is running just enter the following in your browser:
+## 🚀 Running the Server
+To run the server locally:
 
-    http://127.0.0.1:8000/docs
+```bash
+uvicorn app.main:app --reload
+```
+
+## 📖 API Documentation
+Once the server is running, the API documentation is automatically generated. You can access it by visiting:
+
+```bash
+http://127.0.0.1:8000/docs
+```
+
+Now you're all set to experiment with the available API endpoints! 🎉
+
+---
+🛠️ **Tech Stack**: Python, FastAPI, PostgreSQL, Alembic, Docker
