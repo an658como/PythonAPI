@@ -58,5 +58,10 @@ http://127.0.0.1:8000/docs
 
 Now you're all set to experiment with the available API endpoints! 🎉
 
+Alternatively, you could play with the API on AWS without building the app locally:
+[https://www.alinaseri.xyz/docs](https://www.alinaseri.xyz/docs)
+
+
+
 ---
 🛠️ **Tech Stack**: Python, FastAPI, PostgreSQL, Alembic, Docker
